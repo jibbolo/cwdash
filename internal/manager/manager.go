@@ -43,9 +43,6 @@ func (d *DashboardManager) DashboardList() (list []string) {
 }
 
 func (d *DashboardManager) LoadDashboard(ctx context.Context, dashboardName string) error {
-	d.mux.Lock()
-	defer d.mux.Unlock()
-
 	resp, err := aws.CloudWatch().GetDashboard(ctx, &cloudwatch.GetDashboardInput{
 		DashboardName: &dashboardName,
 	})
@@ -61,11 +58,15 @@ func (d *DashboardManager) LoadDashboard(ctx context.Context, dashboardName stri
 	return nil
 }
 
-func (d *DashboardManager) RefreshDashboardList(ctx context.Context) error {
+func (d *DashboardManager) RefreshDashboards(ctx context.Context) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	resp, err := aws.CloudWatch().ListDashboards(ctx, &cloudwatch.ListDashboardsInput{})
 	if err != nil {
 		return fmt.Errorf("failed to describe dashboard: %v ", err)
 	}
+
 	for _, e := range resp.DashboardEntries {
 		if err := d.LoadDashboard(ctx, *e.DashboardName); err != nil {
 			log.Printf("can't load dashboard %s: %v", *e.DashboardName, err)

@@ -45,7 +45,7 @@ func (a *App) Run() error {
 	ctx, cancel := context.WithTimeout(context.Background(), loadTimeout)
 	defer cancel()
 
-	err := a.dm.RefreshDashboardList(ctx)
+	err := a.dm.RefreshDashboards(ctx)
 	if err != nil {
 		return fmt.Errorf("can't refresh dashboard list: %w", err)
 	}
