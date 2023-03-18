@@ -1,14 +1,18 @@
 package app
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/jibbolo/cwdash/internal/manager"
 )
+
+const awsInitTimeout = time.Second * 10
 
 type App struct {
 	build, port string
@@ -38,13 +42,23 @@ func New(build, port string) *App {
 
 // Run initation the imageGenerator and starts the webserver
 func (a *App) Run() error {
-	if err := a.dm.InitAWS(); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), awsInitTimeout)
+	defer cancel()
+
+	if err := a.dm.InitAWS(ctx); err != nil {
 		return fmt.Errorf("can't init aws: %w ", err)
 	}
-	err := a.dm.RefreshDashboardList()
+	err := a.dm.RefreshDashboardList(ctx)
 	if err != nil {
 		return fmt.Errorf("can't refresh dashboard list: %w", err)
 	}
+
+	srv := &http.Server{
+		Addr:         ":" + a.port,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
+
 	log.Println("Listening... http://0.0.0.0:" + a.port)
-	return http.ListenAndServe(":"+a.port, a.router)
+	return srv.ListenAndServe()
 }

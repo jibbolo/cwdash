@@ -18,7 +18,7 @@ var additionalFields = map[string]interface{}{
 	"timezone": "+0200",
 }
 
-func (d *DashboardManager) RenderWidget(widget widget.Widget) ([]byte, error) {
+func (d *DashboardManager) RenderWidget(ctx context.Context, widget widget.Widget) ([]byte, error) {
 	props := widget.Properties
 	for k, v := range additionalFields {
 		props[k] = v
@@ -27,7 +27,7 @@ func (d *DashboardManager) RenderWidget(widget widget.Widget) ([]byte, error) {
 	if err != nil {
 		return []byte{}, fmt.Errorf("can't marshal props: %v ", err)
 	}
-	resp, err := d.cw.GetMetricWidgetImage(context.Background(), &cloudwatch.GetMetricWidgetImageInput{
+	resp, err := d.cw.GetMetricWidgetImage(ctx, &cloudwatch.GetMetricWidgetImageInput{
 		MetricWidget: aws.String(string(propsBytes)),
 	})
 	if err != nil {

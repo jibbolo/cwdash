@@ -30,7 +30,7 @@ func (a *App) indexFunc(w http.ResponseWriter, r *http.Request) {
 	if err := indexTmpl.Execute(w, struct {
 		BUILD string
 		List  []string
-	}{a.build, a.dm.DashboardList()}); err != nil {
+	}{a.build, a.dm.DashboardList(r.Context())}); err != nil {
 		log.Printf("can't render template: %v\n", err)
 		http.Error(w, http.StatusText(500), 500)
 		return
@@ -48,7 +48,7 @@ func (a *App) widgetFunc(w http.ResponseWriter, r *http.Request) {
 	index, _ := strconv.Atoi(number)
 
 	var buf bytes.Buffer
-	clen, err := a.dm.RenderGraph(&buf, name, index)
+	clen, err := a.dm.RenderGraph(r.Context(), &buf, name, index)
 	if err != nil {
 		log.Printf("can't render widget: %v\n", err)
 		renderEmptyPNG(w)
@@ -69,7 +69,7 @@ func (a *App) dashboardFunc(grid bool) func(w http.ResponseWriter, r *http.Reque
 		name := chi.URLParam(r, "name")
 		dashboard := a.dm.GetDashboard(name)
 		if dashboard == nil {
-			if err := a.dm.RefreshBody(name); err != nil {
+			if err := a.dm.RefreshBody(r.Context(), name); err != nil {
 				http.Error(w, http.StatusText(404), 404)
 				return
 			}
