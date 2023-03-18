@@ -32,7 +32,7 @@
 <div class="gallery">
 {{range $i, $w := .Widgets}}
     {{ if $w.HasMarkdown }}
-        {{ if not $grid }}{{$w.Markdown}}{{end}}
+        {{ if not $grid }}{{$w.RenderMarkdown}}{{end}}
     {{else}}
         {{ if not $w.HasQuery }}
             {{ if not $grid }}

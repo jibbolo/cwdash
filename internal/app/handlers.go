@@ -30,7 +30,7 @@ func (a *App) indexFunc(w http.ResponseWriter, r *http.Request) {
 	if err := indexTmpl.Execute(w, struct {
 		BUILD string
 		List  []string
-	}{a.build, a.dm.DashboardList(r.Context())}); err != nil {
+	}{a.build, a.dm.DashboardList()}); err != nil {
 		log.Printf("can't render template: %v\n", err)
 		http.Error(w, http.StatusText(500), 500)
 		return
@@ -55,7 +55,7 @@ func (a *App) widgetFunc(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "image/png")
-	w.Header().Set("Cache-Control", "max-age=300") // 30 days
+	w.Header().Set("Cache-Control", "max-age=300")
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", clen))
 
 	if _, err := buf.WriteTo(w); err != nil {
@@ -68,14 +68,7 @@ func (a *App) dashboardFunc(grid bool) func(w http.ResponseWriter, r *http.Reque
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := chi.URLParam(r, "name")
 		dashboard := a.dm.GetDashboard(name)
-		if dashboard == nil {
-			if err := a.dm.RefreshBody(r.Context(), name); err != nil {
-				http.Error(w, http.StatusText(404), 404)
-				return
-			}
-			dashboard = a.dm.GetDashboard(name)
-		}
-		tmpl := dashboardTmpl
+
 		w.Header().Set("Content-Type", "text/html")
 
 		body := struct {
@@ -85,7 +78,7 @@ func (a *App) dashboardFunc(grid bool) func(w http.ResponseWriter, r *http.Reque
 			LastUpdate time.Time
 		}{grid, name, dashboard.Widgets, time.Now()}
 
-		if err := tmpl.Execute(w, body); err != nil {
+		if err := dashboardTmpl.Execute(w, body); err != nil {
 			log.Printf("can't render template: %v\n", err)
 			http.Error(w, http.StatusText(500), 500)
 			return

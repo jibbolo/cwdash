@@ -12,7 +12,7 @@ import (
 	"github.com/jibbolo/cwdash/internal/manager"
 )
 
-const awsInitTimeout = time.Second * 10
+const loadTimeout = 5 * time.Second
 
 type App struct {
 	build, port string
@@ -42,18 +42,16 @@ func New(build, port string) *App {
 
 // Run initation the imageGenerator and starts the webserver
 func (a *App) Run() error {
-	ctx, cancel := context.WithTimeout(context.Background(), awsInitTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), loadTimeout)
 	defer cancel()
 
-	if err := a.dm.InitAWS(ctx); err != nil {
-		return fmt.Errorf("can't init aws: %w ", err)
-	}
 	err := a.dm.RefreshDashboardList(ctx)
 	if err != nil {
 		return fmt.Errorf("can't refresh dashboard list: %w", err)
 	}
 
 	srv := &http.Server{
+		Handler:      a.router,
 		Addr:         ":" + a.port,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 30 * time.Second,
