@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
-	"github.com/jibbolo/cwdash/internal/widget"
+	"github.com/jibbolo/cwdash/internal/manager/widget"
 )
 
 // Dashboard is the main application struct
@@ -44,8 +44,6 @@ func (d *DashboardManager) InitAWS() error {
 }
 
 func (d *DashboardManager) RefreshBody(dashboardName string) error {
-	println("refreshing body for " + dashboardName)
-
 	resp, err := d.cw.GetDashboard(context.Background(), &cloudwatch.GetDashboardInput{
 		DashboardName: aws.String(dashboardName),
 	})

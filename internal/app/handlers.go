@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"embed"
 	"encoding/base64"
 	"fmt"
 	"html/template"
@@ -11,14 +12,17 @@ import (
 	"time"
 
 	"github.com/go-chi/chi"
-	"github.com/jibbolo/cwdash/internal/widget"
+	"github.com/jibbolo/cwdash/internal/manager/widget"
 )
+
+//go:embed all:templates
+var templates embed.FS
 
 const emptyPNG = `iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=`
 
 var (
-	dashboardTmpl = template.Must(template.ParseFiles("templates/dashboard.html"))
-	indexTmpl     = template.Must(template.ParseFiles("templates/index.html"))
+	dashboardTmpl = template.Must(template.ParseFS(templates, "templates/dashboard.html"))
+	indexTmpl     = template.Must(template.ParseFS(templates, "templates/index.html"))
 )
 
 func (a *App) indexFunc(w http.ResponseWriter, r *http.Request) {
