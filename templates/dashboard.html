@@ -1,0 +1,49 @@
+<html><head><meta http-equiv="refresh" content="300" />
+<style>
+    body {padding:5px;font-family:monospace;}
+    /* img {
+        -webkit-filter: invert(1);
+        filter: invert(1);
+    } */
+    h5 {position:absolute;z-index:1;right:0px;margin:10px 0;}
+    h3 {float:right;margin:10px 0;}
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(6, 15vw);
+        grid-gap: 5px;
+    }
+    figure {margin:0px;}
+    .gallery__img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }   
+</style>
+{{$name := .Name}}
+{{$grid := .Grid}}
+<title>{{$name}}</title></head><body>
+{{ if not $grid }}
+    <h3>{{.LastUpdate.Format "02 Jan 06 15:04 MST"}}</h3>
+    <h1>{{$name}} - <a href="/dashboard/{{$name}}/grid">grid</a></h1>
+{{else}}
+    <h5>{{.LastUpdate.Format "02 Jan 06 15:04 MST"}}</h5>
+{{end}}     
+<div class="gallery">
+{{range $i, $w := .Widgets}}
+    {{ if $w.HasMarkdown }}
+        {{ if not $grid }}{{$w.Markdown}}{{end}}
+    {{else}}
+        {{ if not $w.HasQuery }}
+            {{ if not $grid }}
+                <img src="/dashboard/{{$name}}/{{$i}}" />
+            {{else}}
+                <figure class="gallery__item gallery__item--{{$i}}">
+                <img src="/dashboard/{{$name}}/{{$i}}" class="gallery__img" alt="Image {{$i}}" />
+                </figure>
+            {{end}} 
+        {{end}}
+    {{end}}
+{{end}}
+</div>
+</body></html>

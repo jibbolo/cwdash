@@ -1,0 +1,14 @@
+<html><head><title>Dashboards</title>
+<style>
+    body {padding:5px;font-family:monospace;}
+</style>
+</head><body>
+<h1>Dashboards</h1>
+<ul>
+{{range .List}}
+    <li><a href="/dashboard/{{.}}">{{.}}</a> - <a href="/dashboard/{{.}}/grid">grid</a></li>
+{{end}}
+</ul>
+<hr/>
+DASHABOARD - {{.BUILD}}
+</body></html>
