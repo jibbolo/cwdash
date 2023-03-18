@@ -35,7 +35,7 @@ func (d *DashboardManager) GetDashboard(name string) *Dashboard {
 }
 
 func (d *DashboardManager) InitAWS() error {
-	cfg, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion("us-east-2"))
+	cfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		return fmt.Errorf("unable to load SDK config: %w ", err)
 	}
