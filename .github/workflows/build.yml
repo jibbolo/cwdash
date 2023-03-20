@@ -25,7 +25,8 @@ jobs:
       - id: build-image
         name: Build and tag
         run: |
-          docker build -t $IMAGE_NAME .
+          docker build -t $IMAGE_NAME:latest .
+          docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ github.sha }}
 
       - id: push
         name: Push To GHCR
