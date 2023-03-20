@@ -1,0 +1,44 @@
+name: Build
+on:
+  push:
+    branches:
+    - main
+  workflow_dispatch:
+
+env:
+    IMAGE_NAME: cwdash
+    IMAGE_TAGS: latest ${{ github.sha }}
+    REGISTRY: ghcr.io/${{ github.repository_owner }}
+    REGISTRY_USER: ${{ github.actor }}
+    REGISTRY_PASSWORD: ${{ github.token }}
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - id: build-image
+        name: Build and tag
+        run: |
+          docker build -t $IMAGE_NAME .
+
+      - id: push
+        name: Push To GHCR
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ env.IMAGE_NAME }}
+          tags: ${{ env.IMAGE_TAGS }}
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+          extra-args: |
+            --disable-content-trust
+
+      - name: Echo outputs
+        run: |
+          echo "${{ toJSON(steps.push.outputs) }}"
