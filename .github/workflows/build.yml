@@ -30,4 +30,4 @@ jobs:
         run: |
           image=$REGISTRY/${REPOSITORY}
           docker build . -t ${image}:latest
-          docker push ${image} --all-tags
+          docker push ${image}:latest
