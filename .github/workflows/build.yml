@@ -5,9 +5,13 @@ on:
     - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   REGISTRY: ghcr.io
-  REPOSITORY: ${{ github.repository }} # jibbolo/cwdash
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
 
@@ -26,8 +30,16 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build the Docker image
-        run: |
-          image=$REGISTRY/${REPOSITORY}
-          docker build . -t ${image}:latest
-          docker push ${image}:latest
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
