@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -15,18 +14,18 @@ import (
 const loadTimeout = 5 * time.Second
 
 type App struct {
-	build, port string
-	dm          *manager.DashboardManager
-	router      *chi.Mux
+	version string
+	dm      *manager.DashboardManager
+	router  *chi.Mux
 }
 
-func New(build, port string) *App {
+func New(version string) (*App, error) {
 
 	a := &App{
-		build: build,
-		port:  port,
-		dm:    manager.New(),
+		version: version,
+		dm:      manager.New(),
 	}
+
 	a.router = chi.NewRouter()
 	a.router.Use(middleware.Logger)
 	a.router.Use(middleware.Recoverer)
@@ -37,11 +36,18 @@ func New(build, port string) *App {
 	a.router.Get("/dashboard/{name:[A-Za-z0-9\\-]+}", a.dashboardFunc(false))
 	a.router.Get("/dashboard/{name:[A-Za-z0-9\\-]+}/grid", a.dashboardFunc(true))
 
-	return a
+	if err := a.init(); err != nil {
+		return nil, err
+	}
+
+	return a, nil
 }
 
-// Run initation the imageGenerator and starts the webserver
-func (a *App) Run() error {
+func (a *App) Handler() http.Handler {
+	return a.router
+}
+
+func (a *App) init() error {
 	ctx, cancel := context.WithTimeout(context.Background(), loadTimeout)
 	defer cancel()
 
@@ -49,14 +55,5 @@ func (a *App) Run() error {
 	if err != nil {
 		return fmt.Errorf("can't refresh dashboard list: %w", err)
 	}
-
-	srv := &http.Server{
-		Handler:      a.router,
-		Addr:         ":" + a.port,
-		ReadTimeout:  5 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-
-	log.Println("Listening... http://0.0.0.0:" + a.port)
-	return srv.ListenAndServe()
+	return nil
 }

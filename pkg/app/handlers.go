@@ -30,7 +30,7 @@ func (a *App) indexFunc(w http.ResponseWriter, r *http.Request) {
 	if err := indexTmpl.Execute(w, struct {
 		BUILD string
 		List  []string
-	}{a.build, a.dm.DashboardList()}); err != nil {
+	}{a.version, a.dm.DashboardList()}); err != nil {
 		log.Printf("can't render template: %v\n", err)
 		http.Error(w, http.StatusText(500), 500)
 		return
